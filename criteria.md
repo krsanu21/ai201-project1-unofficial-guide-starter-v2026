@@ -19,30 +19,32 @@ pipeline earns credit; *"80% seemed reasonable"* does not.
 
 ## 1. Retrieved chunks contain the answer
 
-For at least 4 of my 5 test questions, the retrieved chunks include one that
-contains the answer.
+For at least 4 of my 5 test questions, the top 5 retrieved chunks include at
+least one chunk that contains the answer.
 
 **Why this target:**
-<!-- e.g. "One of my questions is about a topic only two documents mention, so
-     I expect that one to be hard." -->
+The answer has to be in the retrieval set before the model can answer well. In a
+short factual corpus, one missing fact is enough to make a response wrong.
 
 ---
 
 ## 2. Every answer names a source
 
-Every answer the system produces names at least one source document.
+Every answer the system produces names at least one source document that was
+actually retrieved for that question.
 
 **Why this target:**
-<!-- Why all five and not four? What about your setup makes that achievable —
-     or what would have to go wrong for it not to be? -->
+I want the answer to point back to something the system actually used. In this
+corpus, weak or vague attribution is a common failure mode, so this is the
+minimum grounding I need.
 
 ---
 
 ## 3. The relevance gate stops out-of-corpus questions
 
 When I ask a question my documents clearly don't cover, the relevance gate
-stops it and the system returns "I don't have enough information about that" —
-in at least 4 of 5 tries.
+rejects it before generation and the system returns "I don't have enough
+information about that" in at least 4 of 5 tries.
 
 <!-- The five questions are the ones in `OUT_OF_SCOPE` at the bottom of
      `questions.py`, and `run_eval.py` puts them through the gate and writes
@@ -50,48 +52,27 @@ in at least 4 of 5 tries.
      just keep five of them, or the "4 of 5" above has nothing to be 4 of. -->
 
 **Why this target:**
-<!-- What did your distances look like when you set the cutoff in Milestone 4?
-     Was there a clean gap, or did the two groups overlap? -->
+This is the guardrail against hallucinated answers. The corpus has a clear
+in-corpus vs. out-of-corpus split, so the cutoff should be strict enough to
+block off-topic questions without blocking the ones it can actually answer.
 
 ---
 
-## 4. Something about your chunks
+## 4. Chunks keep the important information together
 
-<!-- YOU WRITE THIS ONE.
-
-     How would you know if your chunks were the right size? Name something
-     countable or observable.
-
-     Examples of the right shape — don't copy these, they should come from
-     what you actually saw in Milestone 3:
-       - "At least 4 of 5 sampled chunks read as a complete thought, with no
-          sentence cut in half at either end."
-       - "No chunk is shorter than 200 characters, since anything below that
-          in my corpus turned out to be a heading with no content under it." -->
-
-
+For at least 4 of 5 sampled chunks, the text reads like a complete thought or paragraph, with no sentence cut off at either end.
 
 **Why this target:**
-
-
+These documents are short and factual, so the useful detail is often a single sentence or a very small paragraph. If a chunk breaks right through the middle of that fact, the retrieval system can still find it, but the answer becomes awkward or incomplete. I want the chunking to preserve the important idea most of the time, not just squeeze a few words into a fixed-size box.
 
 ---
 
-## 5. Your choice
+## 5. The answer names the right place
 
-<!-- YOU WRITE THIS ONE TOO.
-
-     Pick something you actually care about getting right. It could be about
-     speed, about refusals, about a particular kind of question your corpus
-     handles badly, about source attribution being correct rather than merely
-     present — anything, as long as it names a number or an observable
-     outcome. -->
-
-
+For at least 4 of 5 test questions, the answer names the correct city or landmark from the corpus instead of drifting to a nearby but wrong location.
 
 **Why this target:**
-
-
+This corpus has a lot of places that are similar on the surface, so a wrong answer can sound believable even when it is not correct. I care about this because the point of the system is to help someone find the right local fact, and a wrong-location answer is more harmful than a clear refusal. This target is specific enough to measure, and it reflects the real risk in these documents.
 
 ---
 
