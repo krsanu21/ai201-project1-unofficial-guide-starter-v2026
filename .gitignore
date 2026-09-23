@@ -1,6 +1,9 @@
 # API keys — never commit these
 .env
 
+# Local working guides
+CLAUDE.md
+
 # Python
 __pycache__/
 *.py[cod]
