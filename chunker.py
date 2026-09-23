@@ -80,6 +80,29 @@ def fallback_split(
     return chunks
 
 
+def section_split(
+    documents: list[Document],
+    chunk_size: int | None = None,
+    overlap: int | None = None,
+) -> list[Chunk]:
+    """Split a document by section markers and keep each section as a chunk."""
+    chunks: list[Chunk] = []
+
+    for doc in documents:
+        sections = [section.strip() for section in doc.text.split("#") if section.strip()]
+        for index, section in enumerate(sections):
+            chunks.append(
+                Chunk(
+                    text=section,
+                    source=doc.source,
+                    index=index,
+                    produced_by="chunker.py::section_split",
+                )
+            )
+
+    return chunks
+
+
 def split_documents(documents: list[Document]) -> list[Chunk]:
     """
     Split documents into chunks. ⚠️ REPLACE THE BODY OF THIS IN MILESTONE 3.
@@ -97,7 +120,7 @@ def split_documents(documents: list[Document]) -> list[Chunk]:
       - Would splitting on paragraph breaks keep more thoughts intact than
         splitting on a character count?
     """
-    return fallback_split(documents)
+    return section_split(documents, chunk_size=config.CHUNK_SIZE, overlap=config.CHUNK_OVERLAP)
 
 
 def describe(chunks: list[Chunk]) -> str:
