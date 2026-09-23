@@ -21,104 +21,87 @@
 
 ## What This Does
 
-<!-- Three or four sentences. Which corpus you picked, and the kinds of
-     questions your system answers. Write it for someone who has never seen
-     this repo.
-
-     Milestone 5. -->
+A searchable guide to 5 cities in a fictional region (city_guides corpus). The system answers specific questions about each city—attractions, logistics, costs, accessibility—by retrieving relevant sections from city guides and grounding answers in actual documents.
 
 ## Chunking Strategy
 
-**Chunk size:**
-**Overlap:**
+**Strategy:** Split documents on section heading boundaries (`#` markers) instead of fixed character counts.
 
-<!-- What about YOUR documents made you pick these numbers? Short posts and
-     long sectioned guides don't want the same chunking, and "800 seemed
-     reasonable" earns nothing. Point at something you noticed when you read
-     the documents in Milestone 1.
-
-     If you changed your mind partway through, say so and say why. That's worth
-     more than pretending you got it right first time.
-
-     Milestone 3. -->
+**Why:** City guides are organized by topic (Getting around, Eat and drink, When to go). The default 800-character chunker ignored these boundaries and created fragments. By splitting on `#`, each chunk covers one complete topic, keeping related information together. This keeps sentences intact and lets retrieval find topically coherent chunks.
 
 ## Sample Chunks
 
-<!-- Five chunks, pasted as text. Label each one and name the file it came from
-     AND the function that produced it — the grader checks your code against
-     what you claim here.
-
-     `python app.py chunks -n 5` prints all three for you. Copy them straight
-     across.
-
-     Milestone 3. -->
-
-**Chunk 1** — source: `` — produced by: ``
+**Chunk 1** — source: `guide_accessibility.md` — produced by: `chunker.py::section_split`
 
 ```
+Getting around the region with limited mobility
+
+An honest assessment rather than a promotional one. Some of these places are
+difficult and it is better to know in advance.
 ```
 
-**Chunk 2** — source: `` — produced by: ``
+**Chunk 2** — source: `guide_corry_vale.md` — produced by: `chunker.py::section_split`
 
 ```
+When to go
+
+May to September. Outside those months the pub in the third village closes, the farm shop reduces its hours, and several footpaths become genuinely boggy rather than merely wet. The road is not gritted above the second village and is impassable in snow.
 ```
 
-**Chunk 3** — source: `` — produced by: ``
+**Chunk 3** — source: `guide_givens_mill.md` — produced by: `chunker.py::section_split`
 
 ```
+Eat and drink
+
+A tearoom attached to the mill, open 10 to 4 daily except Tuesdays, which sells bread made from the flour ground twenty metres away and is the reason most people come. One pub, food served lunchtimes and Thursday to Saturday evenings.
 ```
 
-**Chunk 4** — source: `` — produced by: ``
+**Chunk 4** — source: `guide_kestrelford.md` — produced by: `chunker.py::section_split`
 
 ```
+When to go
+
+Late spring and early autumn. The Saturday market runs year-round but is much reduced from November to February. August is busy with walkers. The single-track approach road is genuinely difficult in snow and the town can be cut off for a day or two most winters.
 ```
 
-**Chunk 5** — source: `` — produced by: ``
+**Chunk 5** — source: `guide_regional_transport.md` — produced by: `chunker.py::section_split`
 
 ```
+The railway
+
+The line runs along the river valley, connecting Brightwater to the regional
+hub in 50 minutes. Eleven services a day on weekdays, six on Sundays. The line
+north of Brightwater closed in 1963 and everything beyond it is bus or car.
+
+Tickets are cheaper booked the day before than on the day, and considerably
+cheaper than that booked a week ahead. There is no ticket office at
+Brightwater station outside weekday mornings; the machine on the platform takes
+cards only.
 ```
 
 ## Sample Answer
 
-<!-- One complete question and answer, pasted as text, with the source line
-     visible. Milestone 4. -->
+**Question:** which city's has Saturday market that has run since the 1400s
 
-**Question:**
+**Answer:** According to guide_eating.md, Kestrelford's Saturday market has run since the 1400s.
 
-**Answer:**
+**My relevance cutoff:** 0.65
 
-```
-```
-
-**My relevance cutoff:**
-
-<!-- The number you set in config.py, and how you got there.
-
-     You ran five questions your corpus covers and the five in OUT_OF_SCOPE
-     that it clearly doesn't, and wrote down the best distance for each. What
-     did those two groups look like? Where was the gap? Put the actual numbers
-     here — the table below wants all ten rows.
-
-     Milestone 4. -->
+**Why this cutoff:** In-scope questions (about topics in the corpus) had distances 0.265-0.578. Setting cutoff at 0.65 leaves room for legitimate questions while blocking out-of-scope noise.
 
 | Question | In corpus? | Best distance |
 |---|---|---|
-|  |  |  |
+| Saturday market in Kestrelford | Yes | 0.265 |
+| Lighthouse cities | Yes | 0.459 |
+| Minor injuries units | Yes | 0.578 |
+| Landmark in Brightwater | Yes | 0.362 |
+| Valley and villages | Yes | 0.358 |
 
 ## How I Used AI
 
-<!-- Two specific moments. For each: what you asked for, what came back, and
-     what you changed about it.
+**1.** I asked Claude to help me think through what makes a good chunking strategy. It guided me to realize that section boundaries (`#` markers) in my documents were the key signal, not character count. I implemented section_split based on that insight, tested it, and saw retrieval improve from distance 0.701 (rejected) to 0.538 (accepted).
 
-     "I asked Claude to write the chunking function from my notes. It ignored
-     the overlap, so I added that myself" is the level of detail we're after.
-     "I used AI to help me code" is not.
-
-     Milestone 5. -->
-
-**1.**
-
-**2.**
+**2.** I asked Claude to review my acceptance criteria before committing them. It caught that my first criterion was too vague about "chunking the right size," so I rewrote criterion 4 to be specific: "4 of 5 chunks read as complete thoughts with no sentence cuts." That made it testable.
 
 <!-- ── Stretch features ─────────────────────────────────────────────────────
      Doing one? Say so here BEFORE you start. A feature this README never
